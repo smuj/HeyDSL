@@ -1,0 +1,266 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <!-- Core CodeMirror -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.css"
+        integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.js"
+        integrity="sha512-hJEMjfR4ds7mXbBot3i/R+CsiyYpeWSezXul8uLBT8wXAHPUdhRgl4LLTtMGwjarftGKiQqK1v20XScm0ANTPQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- DSL language mode (injected by server) -->
+    <script src="{{ url_for('syntax_def') }}"></script>
+
+    <style>
+        body {
+            margin: 2rem;
+            font-family: sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #333333;
+        }
+
+        body.dark-theme {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        body.dark-theme button {
+            background-color: #333;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        body.dark-theme button:hover {
+            background-color: #444;
+        }
+
+        .CodeMirror {
+            border: 1px solid #ccc;
+            height: auto;
+            min-height: 400px;
+        }
+
+        body.dark-theme .CodeMirror {
+            background-color: #252526;
+            color: #d4d4d4;
+        }
+
+        body.dark-theme .CodeMirror-gutters {
+            background-color: #1e1e1e;
+            border-right: 1px solid #555;
+        }
+
+        body.dark-theme .CodeMirror-linenumber {
+            color: #858585;
+        }
+
+        body.dark-theme .CodeMirror-cursor {
+            border-left-color: #d4d4d4;
+        }
+
+        .content {
+            display: flex;
+            gap: 1rem;
+            height: calc(100vh - 200px);
+        }
+
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        body.dark-theme .pane {
+            border-color: #555;
+        }
+
+        .pane-title {
+            padding: 1rem;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ccc;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        body.dark-theme .pane-title {
+            background-color: #333;
+            border-bottom-color: #555;
+        }
+
+        .pane-content {
+            flex: 1;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>CodeMirror 5 Editor</h1>
+        <div class="controls">
+            <button id="themeToggle">🌙 Dark Theme</button>
+            <button id="saveBtn">💾 Save</button>
+            <button id="loadBtn">📂 Load</button>
+            <input type="file" id="fileInput" style="display:none;">
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="pane">
+            <h2 class="pane-title">Editor</h2>
+            <div class="pane-content">
+                <textarea id="editor">{{ initial_code }}</textarea>
+            </div>
+        </div>
+        <div class="pane">
+            <h2 class="pane-title">Preview</h2>
+            <div class="pane-content" id="preview">
+                <p style="padding: 1rem; color: #999;">Live preview coming soon...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize editor
+        var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+            lineNumbers: true,
+            mode: "{{ syntax_name }}"
+        });
+
+        // Preview functionality
+        var previewPane = document.getElementById("preview");
+        var previewUpdateTimeout;
+
+        function updatePreview() {
+            var code = editor.getValue();
+
+            fetch("/api/preview", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ code: code })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.html !== undefined) {
+                        previewPane.innerHTML = data.html;
+                    } else if (data.error) {
+                        previewPane.innerHTML = "<p style='padding: 1rem; color: #d44;'>Error: " +
+                            data.error.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</p>";
+                    }
+                })
+                .catch(error => {
+                    previewPane.innerHTML = "<p style='padding: 1rem; color: #d44;'>Preview error: " +
+                        error.message.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</p>";
+                });
+        }
+
+        // Update preview on code changes (debounced)
+        editor.on("change", function () {
+            clearTimeout(previewUpdateTimeout);
+            previewUpdateTimeout = setTimeout(updatePreview, 300);
+        });
+
+        // Initial preview update
+        updatePreview();
+
+        // Theme toggle
+        var themeToggle = document.getElementById("themeToggle");
+        var isDarkTheme = localStorage.getItem("darkTheme") === "true";
+
+        function applyTheme(isDark) {
+            if (isDark) {
+                document.body.classList.add("dark-theme");
+                themeToggle.textContent = "☀️ Light Theme";
+            } else {
+                document.body.classList.remove("dark-theme");
+                themeToggle.textContent = "🌙 Dark Theme";
+            }
+            localStorage.setItem("darkTheme", isDark);
+        }
+
+        // Apply saved theme on load
+        applyTheme(isDarkTheme);
+
+        themeToggle.addEventListener("click", function () {
+            isDarkTheme = !isDarkTheme;
+            applyTheme(isDarkTheme);
+        });
+
+        // Save functionality
+        document.getElementById("saveBtn").addEventListener("click", function () {
+            var content = editor.getValue();
+            var blob = new Blob([content], { type: "text/plain" });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement("a");
+            link.href = url;
+            link.download = "code.txt";
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Load functionality
+        document.getElementById("loadBtn").addEventListener("click", function () {
+            document.getElementById("fileInput").click();
+        });
+
+        document.getElementById("fileInput").addEventListener("change", function (e) {
+            var file = e.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    editor.setValue(event.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+    </script>
+</body>
+
+</html>
