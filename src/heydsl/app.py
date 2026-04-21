@@ -1,8 +1,10 @@
 """Flask routes and application setup for HeyDSL"""
 
+import webbrowser
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from threading import Timer
 from typing import Any, Self
 
 from flask import Flask, Response, jsonify, render_template, request
@@ -75,3 +77,9 @@ def create_app(
             return jsonify({"error": str(e)}), 500
 
     return app
+
+
+def run_and_open(app: Flask, port=5000, host="127.0.0.1"):
+    """Run the Flask app and open it in the default web browser."""
+    Timer(1, lambda: webbrowser.open(f"http://{host}:{port}")).start()
+    app.run(port=port, host=host, debug=True, use_reloader=False)
