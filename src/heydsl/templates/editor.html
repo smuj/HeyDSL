@@ -146,6 +146,7 @@
             <button id="themeToggle">🌙 Dark Theme</button>
             <button id="saveBtn">💾 Save</button>
             <button id="loadBtn">📂 Load</button>
+            <button id="compileBtn">⚙️ Compile</button>
             <input type="file" id="fileInput" style="display:none;">
         </div>
     </div>
@@ -249,6 +250,44 @@
         document.getElementById("loadBtn").addEventListener("click", function () {
             document.getElementById("fileInput").click();
         });
+
+        // Compile functionality
+        document.getElementById("compileBtn").addEventListener("click", async () => {
+            const code = editor.getValue();
+
+            const response = await fetch("/api/compile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code })
+            });
+
+            if (!response.ok) {
+                console.error(await response.text());
+                alert("Compilation failed");
+                return;
+            }
+
+            // Extract filename from Content-Disposition
+            const disposition = response.headers.get("Content-Disposition");
+            let filename = "download.bin";
+
+            if (disposition && disposition.includes("filename=")) {
+                filename = disposition
+                    .split("filename=")[1]
+                    .replace(/["']/g, "");
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename
+            a.click();
+
+            URL.revokeObjectURL(url);
+        });
+
 
         document.getElementById("fileInput").addEventListener("change", function (e) {
             var file = e.target.files[0];
