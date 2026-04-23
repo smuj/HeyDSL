@@ -50,15 +50,26 @@ class ServerConfig:
         return f"http://{self.host}:{self.port}"
 
 
+@dataclass(frozen=True)
+class UIConfig:
+    """Represents UI configuration options for HeyDSL."""
+
+    header_text: str = "HeyDSL Editor"
+    header_colour: str = "#007bff"
+    background_colour: str = "#f5f5f5"
+
+
 class HeyDSLApp:
     """Main application class for HeyDSL"""
 
     def __init__(
         self,
         dsl_definition: DSLDefinition,
+        ui_config: UIConfig = UIConfig(),
         server_config: ServerConfig = ServerConfig(),
     ):
         self.dsl_definition = dsl_definition
+        self.ui_config = ui_config
         self.server_definition = server_config
 
         self.app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -71,6 +82,7 @@ class HeyDSLApp:
                 "editor.html",
                 syntax_name=self.dsl_definition.syntax.name,
                 initial_code=self.dsl_definition.initial_code,
+                ui_config=self.ui_config,
             )
 
         @self.app.route("/syntax-def.js")

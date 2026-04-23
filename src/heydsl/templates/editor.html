@@ -1,6 +1,3 @@
-<!doctype html>
-<html>
-
 <head>
     <meta charset="utf-8">
 
@@ -76,30 +73,6 @@
             background-color: #444;
         }
 
-        .CodeMirror {
-            border: 1px solid #ccc;
-            height: auto;
-            min-height: 400px;
-        }
-
-        body.dark-theme .CodeMirror {
-            background-color: #252526;
-            color: #d4d4d4;
-        }
-
-        body.dark-theme .CodeMirror-gutters {
-            background-color: #1e1e1e;
-            border-right: 1px solid #555;
-        }
-
-        body.dark-theme .CodeMirror-linenumber {
-            color: #858585;
-        }
-
-        body.dark-theme .CodeMirror-cursor {
-            border-left-color: #d4d4d4;
-        }
-
         .content {
             display: flex;
             gap: 1rem;
@@ -141,7 +114,7 @@
 
 <body>
     <div class="header">
-        <h1>CodeMirror 5 Editor</h1>
+        <h1>{{ ui_config.header_text }}</h1>
         <div class="controls">
             <button id="themeToggle">🌙 Dark Theme</button>
             <button id="saveBtn">💾 Save</button>
