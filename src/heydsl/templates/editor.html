@@ -24,14 +24,6 @@
             margin: 2rem;
             font-family: sans-serif;
             transition: background-color 0.3s, color 0.3s;
-        }
-
-        body {
-            background-color: #ffffff;
-            color: #333333;
-        }
-
-        body.dark-theme {
             background-color: #1e1e1e;
             color: #e0e0e0;
         }
@@ -59,24 +51,14 @@
             padding: 0.5rem 1rem;
             cursor: pointer;
             font-size: 0.9rem;
-            background-color: #f5f5f5;
-            color: #333;
-            border: 1px solid #ccc;
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #555;
             border-radius: 4px;
             transition: background-color 0.2s;
         }
 
         button:hover {
-            background-color: #e0e0e0;
-        }
-
-        body.dark-theme button {
-            background-color: #333;
-            color: #e0e0e0;
-            border-color: #555;
-        }
-
-        body.dark-theme button:hover {
             background-color: #444;
         }
 
@@ -90,26 +72,17 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            border: 1px solid #ccc;
+            border: 1px solid #555;
             border-radius: 4px;
             overflow: hidden;
         }
 
-        body.dark-theme .pane {
-            border-color: #555;
-        }
-
         .pane-title {
             padding: 1rem;
-            background-color: #f5f5f5;
-            border-bottom: 1px solid #ccc;
+            background-color: #333;
+            border-bottom: 1px solid #555;
             font-weight: bold;
             margin: 0;
-        }
-
-        body.dark-theme .pane-title {
-            background-color: #333;
-            border-bottom-color: #555;
         }
 
         .pane-content {
@@ -128,7 +101,6 @@
                 <option value="{{ name }}">{{ name }}</option>
                 {% endfor %}
             </select>
-            <button id="themeToggle">🌙 Dark Theme</button>
             <button id="saveBtn">💾 Save</button>
             <button id="loadBtn">📂 Load</button>
             <button id="compileBtn">⚙️ Compile</button>
@@ -209,28 +181,6 @@
         // Initial preview update
         updatePreview();
 
-        // Theme toggle
-        var themeToggle = document.getElementById("themeToggle");
-        var isDarkTheme = localStorage.getItem("darkTheme") === "true";
-
-        function applyTheme(isDark) {
-            if (isDark) {
-                document.body.classList.add("dark-theme");
-                themeToggle.textContent = "☀️ Light Theme";
-            } else {
-                document.body.classList.remove("dark-theme");
-                themeToggle.textContent = "🌙 Dark Theme";
-            }
-            localStorage.setItem("darkTheme", isDark);
-        }
-
-        // Apply saved theme on load
-        applyTheme(isDarkTheme);
-
-        themeToggle.addEventListener("click", function () {
-            isDarkTheme = !isDarkTheme;
-            applyTheme(isDarkTheme);
-        });
 
         // Save functionality
         document.getElementById("saveBtn").addEventListener("click", function () {
