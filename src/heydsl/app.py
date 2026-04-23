@@ -35,16 +35,16 @@ class HeyDSLApp:
         compile_fn: Callable[[str], bytes],
         preview_fn: Callable[[str], str],
         syntax: Syntax,
+        compiled_filename_fn: Callable[[], str] = lambda: "output.bin",
         initial_code="",
-        compiled_extension: str = "bin",
         host="127.0.0.1",
         port=5000,
     ):
         self.compile_fn = compile_fn
         self.preview_fn = preview_fn
+        self.compiled_filename_fn = compiled_filename_fn
         self.syntax = syntax
         self.initial_code = initial_code
-        self.compiled_extension = compiled_extension
         self.host = host
         self.port = port
 
@@ -82,11 +82,12 @@ class HeyDSLApp:
                 return jsonify({"error": "Missing 'code' field in request"}), 400
             try:
                 output = self.compile_fn(data["code"])
+
                 return send_file(
                     io.BytesIO(output),
                     mimetype="application/octet-stream",
                     as_attachment=True,
-                    download_name=f"output.{self.compiled_extension}",
+                    download_name=self.compiled_filename_fn(),
                 )
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
