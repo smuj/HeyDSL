@@ -3,7 +3,7 @@
 import io
 import webbrowser
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Timer
 from typing import Self
@@ -58,7 +58,7 @@ class UIConfig:
     """Represents UI configuration options for HeyDSL."""
 
     header_text: str = "HeyDSL Editor"
-    code_themes: list[ExternalAsset] | None = None
+    code_themes: dict[str, ExternalAsset] = field(default_factory=dict)
 
 
 class HeyDSLApp:
@@ -75,8 +75,8 @@ class HeyDSLApp:
         self.ui_config = ui_config
         self.server_definition = server_config
 
-        self.assets: list[ExternalAsset] = cm5_assets + (
-            ui_config.code_themes if ui_config.code_themes else []
+        self.assets: list[ExternalAsset] = cm5_assets + list(
+            ui_config.code_themes.values()
         )
 
         self.app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -96,6 +96,7 @@ class HeyDSLApp:
                 scripts=[
                     asset for asset in self.assets if asset.type == AssetType.SCRIPT
                 ],
+                theme_names=list(self.ui_config.code_themes.keys()),
             )
 
         @self.app.route("/syntax-def.js")

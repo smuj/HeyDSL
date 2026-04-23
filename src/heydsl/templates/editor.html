@@ -123,6 +123,11 @@
     <div class="header">
         <h1>{{ header_text }}</h1>
         <div class="controls">
+            <select id="themeSelect">
+                {% for name in theme_names %}
+                <option value="{{ name }}">{{ name }}</option>
+                {% endfor %}
+            </select>
             <button id="themeToggle">🌙 Dark Theme</button>
             <button id="saveBtn">💾 Save</button>
             <button id="loadBtn">📂 Load</button>
@@ -150,7 +155,20 @@
         // Initialize editor
         var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
             lineNumbers: true,
-            mode: "{{ syntax_name }}"
+            mode: "{{ syntax_name }}",
+            theme: localStorage.getItem("cmTheme") || "{{ theme_names[0] }}"
+        });
+
+        // Theme dropdown
+        var themeSelect = document.getElementById("themeSelect");
+
+        // Set initial dropdown value
+        themeSelect.value = editor.getOption("theme");
+
+        themeSelect.addEventListener("change", function () {
+            var newTheme = themeSelect.value;
+            editor.setOption("theme", newTheme);
+            localStorage.setItem("cmTheme", newTheme);
         });
 
         // Preview functionality
