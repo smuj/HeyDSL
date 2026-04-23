@@ -10,6 +10,9 @@ from typing import Self
 
 from flask import Flask, Response, jsonify, render_template, request, send_file
 
+from .asset import AssetType, ExternalAsset
+from .cm5_assets import default_cm5_assets
+
 
 @dataclass(frozen=True)
 class Syntax:
@@ -55,8 +58,7 @@ class UIConfig:
     """Represents UI configuration options for HeyDSL."""
 
     header_text: str = "HeyDSL Editor"
-    header_colour: str = "#007bff"
-    background_colour: str = "#f5f5f5"
+    code_themes: list[ExternalAsset] | None = None
 
 
 class HeyDSLApp:
@@ -67,10 +69,15 @@ class HeyDSLApp:
         dsl_definition: DSLDefinition,
         ui_config: UIConfig = UIConfig(),
         server_config: ServerConfig = ServerConfig(),
+        cm5_assets: list[ExternalAsset] = default_cm5_assets(),
     ):
         self.dsl_definition = dsl_definition
         self.ui_config = ui_config
         self.server_definition = server_config
+
+        self.assets: list[ExternalAsset] = cm5_assets + (
+            ui_config.code_themes if ui_config.code_themes else []
+        )
 
         self.app = Flask(__name__, template_folder="templates", static_folder="static")
         self._register_routes()
@@ -82,7 +89,13 @@ class HeyDSLApp:
                 "editor.html",
                 syntax_name=self.dsl_definition.syntax.name,
                 initial_code=self.dsl_definition.initial_code,
-                ui_config=self.ui_config,
+                header_text=self.ui_config.header_text,
+                stylesheets=[
+                    asset for asset in self.assets if asset.type == AssetType.STYLESHEET
+                ],
+                scripts=[
+                    asset for asset in self.assets if asset.type == AssetType.SCRIPT
+                ],
             )
 
         @self.app.route("/syntax-def.js")

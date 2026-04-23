@@ -1,16 +1,23 @@
+<!-- editor.html -->
+<!doctype html>
+<html>
+
 <head>
     <meta charset="utf-8">
 
-    <!-- Core CodeMirror -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.css"
-        integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.js"
-        integrity="sha512-hJEMjfR4ds7mXbBot3i/R+CsiyYpeWSezXul8uLBT8wXAHPUdhRgl4LLTtMGwjarftGKiQqK1v20XScm0ANTPQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    {% for s in stylesheets %}
+    <link rel="stylesheet" href="{{ s.url }}" {% if s.integrity %}integrity="{{ s.integrity }}" {%endif%}
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    {% endfor %}
+
+    {% for s in scripts %}
+    <script src="{{ s.url }}" {% if s.integrity %}integrity="{{ s.integrity }}" {%endif%} crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    {% endfor %}
 
     <!-- DSL language mode (injected by server) -->
     <script src="{{ url_for('syntax_def') }}"></script>
+
 
     <style>
         body {
@@ -114,7 +121,7 @@
 
 <body>
     <div class="header">
-        <h1>{{ ui_config.header_text }}</h1>
+        <h1>{{ header_text }}</h1>
         <div class="controls">
             <button id="themeToggle">🌙 Dark Theme</button>
             <button id="saveBtn">💾 Save</button>
