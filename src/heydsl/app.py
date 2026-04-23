@@ -11,7 +11,7 @@ from typing import Self
 from flask import Flask, Response, jsonify, render_template, request, send_file
 
 from .asset import AssetType, ExternalAsset
-from .cm5_assets import default_cm5_assets
+from .cm5_assets import curated_cm5_themes, default_cm5_assets
 
 
 @dataclass(frozen=True)
@@ -58,7 +58,7 @@ class UIConfig:
     """Represents UI configuration options for HeyDSL."""
 
     header_text: str = "HeyDSL Editor"
-    code_themes: dict[str, ExternalAsset] = field(default_factory=dict)
+    code_themes: dict[str, ExternalAsset] = field(default_factory=curated_cm5_themes)
 
 
 class HeyDSLApp:
