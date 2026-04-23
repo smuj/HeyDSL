@@ -32,7 +32,7 @@ class HeyDSLApp:
 
     def __init__(
         self,
-        compile_fn: Callable[[str], io.BytesIO],
+        compile_fn: Callable[[str], bytes],
         preview_fn: Callable[[str], str],
         syntax: Syntax,
         initial_code="",
@@ -83,7 +83,7 @@ class HeyDSLApp:
             try:
                 output = self.compile_fn(data["code"])
                 return send_file(
-                    output,
+                    io.BytesIO(output),
                     mimetype="application/octet-stream",
                     as_attachment=True,
                     download_name=f"output.{self.compiled_extension}",
