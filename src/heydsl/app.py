@@ -11,7 +11,7 @@ from typing import Self
 from flask import Flask, Response, jsonify, render_template, request, send_file
 
 
-@dataclass
+@dataclass(frozen=True)
 class Syntax:
     """Represents a syntax definition for the editor"""
 
@@ -27,26 +27,39 @@ class Syntax:
         return cls(name=name, definition=definition)
 
 
+@dataclass(frozen=True)
+class DSLDefinition:
+    """Represents a complete DSL definition."""
+
+    syntax: Syntax
+    preview_fn: Callable[[str], str]
+    compile_fn: Callable[[str], bytes]
+    compiled_filename_fn: Callable[[], str] = lambda: "output.bin"
+    initial_code: str = ""
+
+
+@dataclass(frozen=True)
+class ServerConfig:
+    """Represents the server configuration for HeyDSL."""
+
+    host: str = "127.0.0.1"
+    port: int = 5000
+
+    def address(self) -> str:
+        """Return the full address of the server."""
+        return f"http://{self.host}:{self.port}"
+
+
 class HeyDSLApp:
     """Main application class for HeyDSL"""
 
     def __init__(
         self,
-        compile_fn: Callable[[str], bytes],
-        preview_fn: Callable[[str], str],
-        syntax: Syntax,
-        compiled_filename_fn: Callable[[], str] = lambda: "output.bin",
-        initial_code="",
-        host="127.0.0.1",
-        port=5000,
+        dsl_definition: DSLDefinition,
+        server_config: ServerConfig = ServerConfig(),
     ):
-        self.compile_fn = compile_fn
-        self.preview_fn = preview_fn
-        self.compiled_filename_fn = compiled_filename_fn
-        self.syntax = syntax
-        self.initial_code = initial_code
-        self.host = host
-        self.port = port
+        self.dsl_definition = dsl_definition
+        self.server_definition = server_config
 
         self.app = Flask(__name__, template_folder="templates", static_folder="static")
         self._register_routes()
@@ -56,13 +69,15 @@ class HeyDSLApp:
         def index():
             return render_template(
                 "editor.html",
-                syntax_name=self.syntax.name,
-                initial_code=self.initial_code,
+                syntax_name=self.dsl_definition.syntax.name,
+                initial_code=self.dsl_definition.initial_code,
             )
 
         @self.app.route("/syntax-def.js")
         def syntax_def():
-            return Response(self.syntax.definition, mimetype="application/javascript")
+            return Response(
+                self.dsl_definition.syntax.definition, mimetype="application/javascript"
+            )
 
         @self.app.route("/api/preview", methods=["POST"])
         def preview():
@@ -70,7 +85,7 @@ class HeyDSLApp:
             if not data or "code" not in data:
                 return jsonify({"error": "Missing 'code' field in request"}), 400
             try:
-                html = self.preview_fn(data["code"])
+                html = self.dsl_definition.preview_fn(data["code"])
                 return jsonify({"html": html})
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
@@ -81,13 +96,13 @@ class HeyDSLApp:
             if not data or "code" not in data:
                 return jsonify({"error": "Missing 'code' field in request"}), 400
             try:
-                output = self.compile_fn(data["code"])
+                output = self.dsl_definition.compile_fn(data["code"])
 
                 return send_file(
                     io.BytesIO(output),
                     mimetype="application/octet-stream",
                     as_attachment=True,
-                    download_name=self.compiled_filename_fn(),
+                    download_name=self.dsl_definition.compiled_filename_fn(),
                 )
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
@@ -95,5 +110,5 @@ class HeyDSLApp:
     def run(self, open_browser: bool = True) -> None:
         """Run the Flask app and open it in the default web browser."""
         if open_browser:
-            Timer(1, lambda: webbrowser.open(f"http://{self.host}:{self.port}")).start()
-        self.app.run(port=self.port, host=self.host, debug=True, use_reloader=False)
+            Timer(1, lambda: webbrowser.open(self.server_definition.address())).start()
+        self.app.run(self.server_definition.host, self.server_definition.port)
