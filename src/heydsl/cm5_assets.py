@@ -13,10 +13,9 @@ def make_cm5_asset(
     """Helper function to create a CodeMirror 5 asset."""
     extension = "css" if asset_type == AssetType.STYLESHEET else "js"
     url = "/".join(
-        [
-            CM5_BASE_URL,
-            CM5_VERSION,
-            f"{subdir}/" if subdir else "",
+        [CM5_BASE_URL, CM5_VERSION]
+        + ([f"{subdir}"] if subdir else [])
+        + [
             f"{name}.min.{extension}",
         ]
     )
