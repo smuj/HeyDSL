@@ -117,9 +117,13 @@
         </div>
         <div class="pane">
             <h2 class="pane-title">Preview</h2>
-            <div class="pane-content" id="preview">
-                <p style="padding: 1rem; color: #999;">Live preview coming soon...</p>
+            <div class="pane-content">
+                <iframe id="previewFrame"
+                    sandbox="allow-forms allow-popups{% if not clean_preview %} allow-scripts{% endif %}"
+                    style="width:100%; height:100%; border:0">
+                </iframe>
             </div>
+
         </div>
     </div>
 
@@ -152,25 +156,32 @@
 
             fetch("/api/preview", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ code: code })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code })
             })
                 .then(response => response.json())
                 .then(data => {
+                    const iframe = document.getElementById("previewFrame");
+
                     if (data.html !== undefined) {
-                        previewPane.innerHTML = data.html;
+                        // Write HTML safely into the sandboxed iframe
+                        iframe.srcdoc = data.html;
                     } else if (data.error) {
-                        previewPane.innerHTML = "<p style='padding: 1rem; color: #d44;'>Error: " +
-                            data.error.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</p>";
+                        iframe.srcdoc =
+                            "<p style='padding:1rem; color:#d44;'>Error: " +
+                            data.error.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+                            "</p>";
                     }
                 })
                 .catch(error => {
-                    previewPane.innerHTML = "<p style='padding: 1rem; color: #d44;'>Preview error: " +
-                        error.message.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</p>";
+                    const iframe = document.getElementById("previewFrame");
+                    iframe.srcdoc =
+                        "<p style='padding:1rem; color:#d44;'>Preview error: " +
+                        error.message.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+                        "</p>";
                 });
         }
+
 
         // Update preview on code changes (debounced)
         editor.on("change", function () {
