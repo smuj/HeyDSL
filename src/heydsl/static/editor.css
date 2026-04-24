@@ -1,0 +1,77 @@
+body {
+    margin: 2rem;
+    font-family: sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+h1 {
+    margin: 0;
+}
+
+.controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    background-color: #333;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #444;
+}
+
+.content {
+    display: flex;
+    gap: 1rem;
+    height: calc(100vh - 200px);
+}
+
+.pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #555;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.pane-title {
+    padding: 1rem;
+    background-color: #333;
+    border-bottom: 1px solid #555;
+    font-weight: bold;
+    margin: 0;
+}
+
+.pane-content {
+    flex: 1;
+    overflow: auto;
+}
+
+.CodeMirror {
+    height: 100%;
+}
+
+.CodeMirror-scroll {
+    height: 100%;
+}
