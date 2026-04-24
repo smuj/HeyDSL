@@ -118,9 +118,7 @@
         <div class="pane">
             <h2 class="pane-title">Preview</h2>
             <div class="pane-content">
-                <iframe id="previewFrame"
-                    sandbox="allow-forms allow-popups{% if not clean_preview %} allow-scripts{% endif %}"
-                    style="width:100%; height:100%; border:0">
+                <iframe id="previewFrame" sandbox="{{ sandbox }}" style="width:100%; height:100%; border:0">
                 </iframe>
             </div>
 

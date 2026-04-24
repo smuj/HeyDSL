@@ -11,8 +11,8 @@ from typing import Self
 from flask import Flask, Response, jsonify, render_template, request, send_file
 
 from .asset import AssetType, ExternalAsset
+from .clean_preview import sandbox, wrap_preview
 from .cm5_assets import curated_cm5_themes, default_cm5_assets
-from .html_clean import html_clean
 
 
 @dataclass(frozen=True)
@@ -91,7 +91,7 @@ class HeyDSLApp:
                 "editor.html",
                 syntax_name=self.dsl_definition.syntax.name,
                 initial_code=self.dsl_definition.initial_code,
-                clean_preview=self.dsl_definition.clean_preview,
+                sandbox=sandbox(self.dsl_definition.clean_preview),
                 header_text=self.ui_config.header_text,
                 stylesheets=[
                     asset for asset in self.assets if asset.type == AssetType.STYLESHEET
@@ -114,7 +114,14 @@ class HeyDSLApp:
             if not data or "code" not in data:
                 return jsonify({"error": "Missing 'code' field in request"}), 400
             try:
-                return jsonify({"html": self.generate_preview(data["code"])})
+                return jsonify(
+                    {
+                        "html": wrap_preview(
+                            self.dsl_definition.preview_fn(data["code"]),
+                            clean=self.dsl_definition.clean_preview,
+                        )
+                    }
+                )
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
 
@@ -134,17 +141,6 @@ class HeyDSLApp:
                 )
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
-
-    def generate_preview(self, code: str) -> str:
-        """Generate a preview HTML for the given code using the DSL's preview function."""
-        raw = self.dsl_definition.preview_fn(code)
-        return (
-            "<!DOCTYPE html><html><head><meta charset='utf-8'>"
-            "<style>body{margin:0;padding:1rem;font-family:sans-serif;}</style>"
-            "</head><body>"
-            f"{html_clean(raw) if self.dsl_definition.clean_preview else raw}"
-            "</body></html>"
-        )
 
     def run(self, open_browser: bool = True) -> None:
         """Run the Flask app and open it in the default web browser."""
