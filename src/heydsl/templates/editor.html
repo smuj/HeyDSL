@@ -18,7 +18,7 @@
     <!-- DSL language mode (injected by server) -->
     <script src="{{ url_for('syntax_def') }}"></script>
 
-    <link rel="stylesheet" href="/static/editor.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='editor.css') }}">
 </head>
 
 <body>
