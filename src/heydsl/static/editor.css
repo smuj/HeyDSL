@@ -1,9 +1,12 @@
 body {
-    margin: 2rem;
+    margin: 1rem;
+    display: flex;
+    flex-direction: column;
     font-family: sans-serif;
     transition: background-color 0.3s, color 0.3s;
     background-color: #1e1e1e;
     color: #e0e0e0;
+    height: calc(100vh - 2rem);
 }
 
 .header {
@@ -40,10 +43,35 @@ button:hover {
     background-color: #444;
 }
 
+.dropdown {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+
+    border: 1px solid #555;
+    border-radius: 4px;
+
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+
+    cursor: pointer;
+}
+
+.dropdown:hover {
+    border-color: #666;
+}
+
+.dropdown:focus {
+    outline: 2px solid #4a90e2;
+    outline-offset: 2px;
+}
+
+
+
 .content {
+    flex: 1;
     display: flex;
     gap: 1rem;
-    height: calc(100vh - 200px);
 }
 
 .pane {
