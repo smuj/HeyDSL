@@ -22,35 +22,37 @@
 </head>
 
 <body>
-    <div class="header">
-        <h1>{{ header_text }}</h1>
-        <div class="controls">
-            <select id="themeSelect" class="dropdown">
-                {% for name in theme_names %}
-                <option value="{{ name }}">{{ name }}</option>
-                {% endfor %}
-            </select>
-            <button id="saveBtn">💾 Save</button>
-            <button id="loadBtn">📂 Load</button>
-            <button id="compileBtn">⚙️ Compile</button>
-            <input type="file" id="fileInput" style="display:none;">
-        </div>
-    </div>
-
-    <div class="content">
-        <div class="pane">
-            <h2 class="pane-title">Editor</h2>
-            <div class="pane-content">
-                <textarea id="editor">{{ initial_code }}</textarea>
+    <div class="page">
+        <header class="header">
+            <h1>{{ header_text }}</h1>
+            <div class="controls">
+                <select id="themeSelect" class="dropdown">
+                    {% for name in theme_names %}
+                    <option value="{{ name }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <button id="saveBtn">💾 Save</button>
+                <button id="loadBtn">📂 Load</button>
+                <button id="compileBtn">⚙️ Compile</button>
+                <input type="file" id="fileInput" style="display:none;">
             </div>
-        </div>
-        <div class="pane">
-            <h2 class="pane-title">Preview</h2>
-            <div class="pane-content">
-                <iframe id="previewFrame" sandbox="{{ sandbox }}" style="width:100%; height:100%; border:0">
-                </iframe>
-            </div>
+        </header>
 
+        <div class="content">
+            <div class="pane">
+                <h2 class="pane-title">Editor</h2>
+                <div class="pane-content">
+                    <textarea id="editor">{{ initial_code }}</textarea>
+                </div>
+            </div>
+            <div class="pane">
+                <h2 class="pane-title">Preview</h2>
+                <div class="pane-content">
+                    <iframe id="previewFrame" sandbox="{{ sandbox }}">
+                    </iframe>
+                </div>
+
+            </div>
         </div>
     </div>
 
