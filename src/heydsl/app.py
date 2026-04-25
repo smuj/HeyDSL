@@ -13,22 +13,7 @@ from flask import Flask, Response, jsonify, render_template, request, send_file
 from .asset import AssetType, ExternalAsset
 from .clean_preview import sandbox, wrap_preview
 from .cm5_assets import curated_cm5_themes, default_cm5_assets
-
-
-@dataclass(frozen=True)
-class Syntax:
-    """Represents a syntax definition for the editor"""
-
-    name: str
-    definition: str
-
-    @classmethod
-    def from_file(cls, name: str, path: Path) -> Self:
-        """Create a Syntax instance from a file"""
-        if not path.exists():
-            raise FileNotFoundError(f"Syntax definition file not found: {path}")
-        definition = path.read_text(encoding="utf-8")
-        return cls(name=name, definition=definition)
+from .syntax import Syntax
 
 
 @dataclass(frozen=True)

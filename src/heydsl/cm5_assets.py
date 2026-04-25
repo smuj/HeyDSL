@@ -35,6 +35,12 @@ def default_cm5_assets() -> list[ExternalAsset]:
             "codemirror",
             "sha512-hJEMjfR4ds7mXbBot3i/R+CsiyYpeWSezXul8uLBT8wXAHPUdhRgl4LLTtMGwjarftGKiQqK1v20XScm0ANTPQ==",
         ),
+        make_cm5_asset(
+            AssetType.SCRIPT,
+            "simple",
+            "sha512-CGM6DWPHs250F/m90YZ9NEiEUhd9a4+u8wAzeKC6uHzZbYyt9/e2dLC5BGGB6Y0HtEdZQdSDYjDsoTyNGdMrMA==",
+            "addon/mode",
+        ),
     ]
 
 
