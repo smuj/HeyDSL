@@ -8,7 +8,7 @@ from threading import Timer
 
 from flask import Flask, Response, jsonify, render_template, request
 
-from .file_handler import save_compiled_dialog, save_file_dialog
+from .file_handler import save_file, save_compiled
 from .asset import AssetType, ExternalAsset
 from .clean_preview import sandbox, wrap_preview
 from .cm5_assets import curated_cm5_themes, default_cm5_assets
@@ -22,8 +22,8 @@ class DSLDefinition:
     syntax: Syntax
     preview_fn: Callable[[str], str]
     compile_fn: Callable[[str], bytes]
-    save_fn: Callable[[str], str] = lambda c: save_file_dialog(c)
-    save_compiled_fn: Callable[[bytes], str] = lambda c: save_compiled_dialog(c)
+    save_fn: Callable[[str], str] = lambda c: save_file(c)
+    save_compiled_fn: Callable[[bytes], str] = lambda c: save_compiled(c)
     initial_file: Path | None = None  # Initial file to load on startup
     sample_code: str = ""
     clean_preview: bool = True

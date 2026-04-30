@@ -6,69 +6,22 @@ import tkinter as tk
 import tkinter.filedialog as filedialog
 
 
-def save_file_dialog(
-    code: str,
+def _save_dialog(
+    default_name: str = "file.txt",
     initial_dir: str | None = None,
-    default_extension: str = ".txt",
     filetypes: list[tuple[str, str]] | None = None,
-) -> str:
+    title: str = "Save File",
+) -> Path:
     """Show a save dialog and save code to file.
 
     Args:
         code: Content to save
         initial_dir: Initial directory for dialog (optional)
-        default_extension: Default file extension (e.g., ".txt")
-        filetypes: List of (description, pattern) tuples for file type filter
-
-    Returns:
-        Path to saved file (string)
-
-    Raises:
-        Exception: If user cancels or save fails
-    """
-    if filetypes is None:
-        filetypes = [("Text files", "*.txt"), ("All files", "*.*")]
-
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-
-    try:
-        kwargs = {
-            "title": "Save File",
-            "defaultextension": default_extension,
-            "filetypes": filetypes,
-        }
-
-        if initial_dir:
-            kwargs["initialdir"] = initial_dir
-
-        path = filedialog.asksaveasfilename(parent=root, **kwargs)
-        if not path:
-            raise Exception("Save cancelled by user")
-
-        Path(path).write_text(code, encoding="utf-8")
-        return path
-    finally:
-        root.destroy()
-
-
-def save_compiled_dialog(
-    compiled_bytes: bytes,
-    default_name: str = "output.bin",
-    initial_dir: str | None = None,
-    filetypes: list[tuple[str, str]] | None = None,
-) -> str:
-    """Show a save dialog and save compiled bytes to file.
-
-    Args:
-        compiled_bytes: Compiled binary content to save
         default_name: Default filename for the save dialog
-        initial_dir: Initial directory for dialog (optional)
         filetypes: List of (description, pattern) tuples for file type filter
 
     Returns:
-        Path to saved file (string)
+        Path to saved file
 
     Raises:
         Exception: If user cancels or save fails
@@ -82,7 +35,7 @@ def save_compiled_dialog(
 
     try:
         kwargs = {
-            "title": "Save Compiled Output",
+            "title": title,
             "defaultextension": Path(default_name).suffix,
             "initialfile": default_name,
             "filetypes": filetypes,
@@ -95,7 +48,40 @@ def save_compiled_dialog(
         if not path:
             raise Exception("Save cancelled by user")
 
-        Path(path).write_bytes(compiled_bytes)
-        return path
+        return Path(path)
     finally:
         root.destroy()
+
+
+def save_file(
+    code: str,
+    default_name: str = "code.txt",
+    initial_dir: str | None = None,
+    filetypes: list[tuple[str, str]] | None = None,
+) -> str:
+    """Save code using a file dialog."""
+    path = _save_dialog(
+        default_name=default_name,
+        initial_dir=initial_dir,
+        filetypes=filetypes,
+        title="Save code",
+    )
+    path.write_text(code, encoding="utf-8")
+    return str(path)
+
+
+def save_compiled(
+    compiled_bytes: bytes,
+    default_name: str = "output.bin",
+    initial_dir: str | None = None,
+    filetypes: list[tuple[str, str]] | None = None,
+) -> str:
+    """Save compiled bytes using a file dialog."""
+    path = _save_dialog(
+        default_name=default_name,
+        initial_dir=initial_dir,
+        filetypes=filetypes,
+        title="Save compiled output",
+    )
+    path.write_bytes(compiled_bytes)
+    return str(path)
