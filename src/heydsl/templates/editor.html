@@ -31,7 +31,7 @@
                     <option value="{{ name }}">{{ name }}</option>
                     {% endfor %}
                 </select>
-                <button id="saveBtn">💾 Save</button>
+                <button id="saveAsBtn">💾 Save As</button>
                 <button id="loadBtn">📂 Load</button>
                 <button id="compileBtn">⚙️ Compile</button>
                 <input type="file" id="fileInput" style="display:none;">
@@ -77,7 +77,6 @@
         });
 
         // Preview functionality
-        var previewPane = document.getElementById("preview");
         var previewUpdateTimeout;
 
         function updatePreview() {
@@ -91,9 +90,7 @@
                 .then(response => response.json())
                 .then(data => {
                     const iframe = document.getElementById("previewFrame");
-
                     if (data.html !== undefined) {
-                        // Write HTML safely into the sandboxed iframe
                         iframe.srcdoc = data.html;
                     } else if (data.error) {
                         iframe.srcdoc =
@@ -111,71 +108,36 @@
                 });
         }
 
-
-        // Update preview on code changes (debounced)
         editor.on("change", function () {
             clearTimeout(previewUpdateTimeout);
             previewUpdateTimeout = setTimeout(updatePreview, 300);
         });
 
-        // Initial preview update
         updatePreview();
 
+        // Save As
+        document.getElementById("saveAsBtn").addEventListener("click", async function () {
+            try {
+                const code = editor.getValue();
+                const response = await fetch("/api/save-as", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code })
+                });
 
-        // Save functionality
-        document.getElementById("saveBtn").addEventListener("click", function () {
-            var content = editor.getValue();
-            var blob = new Blob([content], { type: "text/plain" });
-            var url = URL.createObjectURL(blob);
-            var link = document.createElement("a");
-            link.href = url;
-            link.download = "code.txt";
-            link.click();
-            URL.revokeObjectURL(url);
+                const data = await response.json();
+                if (!response.ok) {
+                    alert("Save failed: " + data.error);
+                }
+            } catch (error) {
+                alert("Save error: " + error.message);
+            }
         });
 
-        // Load functionality
+        // Load (browser file input)
         document.getElementById("loadBtn").addEventListener("click", function () {
             document.getElementById("fileInput").click();
         });
-
-        // Compile functionality
-        document.getElementById("compileBtn").addEventListener("click", async () => {
-            const code = editor.getValue();
-
-            const response = await fetch("/api/compile", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code })
-            });
-
-            if (!response.ok) {
-                console.error(await response.text());
-                alert("Compilation failed");
-                return;
-            }
-
-            // Extract filename from Content-Disposition
-            const disposition = response.headers.get("Content-Disposition");
-            let filename = "download.bin";
-
-            if (disposition && disposition.includes("filename=")) {
-                filename = disposition
-                    .split("filename=")[1]
-                    .replace(/["']/g, "");
-            }
-
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename
-            a.click();
-
-            URL.revokeObjectURL(url);
-        });
-
 
         document.getElementById("fileInput").addEventListener("change", function (e) {
             var file = e.target.files[0];
@@ -185,6 +147,25 @@
                     editor.setValue(event.target.result);
                 };
                 reader.readAsText(file);
+            }
+        });
+
+        // Compile and save
+        document.getElementById("compileBtn").addEventListener("click", async function () {
+            try {
+                const code = editor.getValue();
+                const response = await fetch("/api/compile", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    alert("Compile failed: " + data.error);
+                }
+            } catch (error) {
+                alert("Compile error: " + error.message);
             }
         });
     </script>

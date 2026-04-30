@@ -1,15 +1,14 @@
 """Flask routes and application setup for HeyDSL"""
 
-import io
 import webbrowser
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Timer
-from typing import Self
 
-from flask import Flask, Response, jsonify, render_template, request, send_file
+from flask import Flask, Response, jsonify, render_template, request
 
+from .file_handler import save_compiled_dialog, save_file_dialog
 from .asset import AssetType, ExternalAsset
 from .clean_preview import sandbox, wrap_preview
 from .cm5_assets import curated_cm5_themes, default_cm5_assets
@@ -23,8 +22,10 @@ class DSLDefinition:
     syntax: Syntax
     preview_fn: Callable[[str], str]
     compile_fn: Callable[[str], bytes]
-    compiled_filename_fn: Callable[[], str] = lambda: "output.bin"
-    initial_code: str = ""
+    save_fn: Callable[[str], str] = lambda c: save_file_dialog(c)
+    save_compiled_fn: Callable[[bytes], str] = lambda c: save_compiled_dialog(c)
+    initial_file: Path | None = None  # Initial file to load on startup
+    sample_code: str = ""
     clean_preview: bool = True
 
 
@@ -66,6 +67,12 @@ class HeyDSLApp:
             ui_config.code_themes.values()
         )
 
+        # Load initial file content if provided
+        if dsl_definition.initial_file:
+            self.initial_code = dsl_definition.initial_file.read_text(encoding="utf-8")
+        else:
+            self.initial_code = dsl_definition.sample_code
+
         self.app = Flask(__name__, template_folder="templates", static_folder="static")
         self._register_routes()
 
@@ -75,7 +82,7 @@ class HeyDSLApp:
             return render_template(
                 "editor.html",
                 syntax_name=self.dsl_definition.syntax.name,
-                initial_code=self.dsl_definition.initial_code,
+                initial_code=self.initial_code,
                 sandbox=sandbox(self.dsl_definition.clean_preview),
                 header_text=self.ui_config.header_text,
                 stylesheets=[
@@ -109,18 +116,28 @@ class HeyDSLApp:
 
         @self.app.route("/api/compile", methods=["POST"])
         def compile():
+            """Compile code and save result using user-supplied save function."""
             data = request.get_json()
             if not data or "code" not in data:
                 return jsonify({"error": "Missing 'code' field in request"}), 400
             try:
-                output = self.dsl_definition.compile_fn(data["code"])
+                compiled = self.dsl_definition.compile_fn(data["code"])
+                path = self.dsl_definition.save_compiled_fn(compiled)
+                return jsonify({"success": True, "path": path})
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
 
-                return send_file(
-                    io.BytesIO(output),
-                    mimetype="application/octet-stream",
-                    as_attachment=True,
-                    download_name=self.dsl_definition.compiled_filename_fn(),
-                )
+        @self.app.route("/api/save-as", methods=["POST"])
+        def save_as():
+            """Save code using user-supplied save function."""
+            # Expected JSON: {"code": "code content"}
+            data = request.get_json()
+            if not data or "code" not in data:
+                return jsonify({"error": "Missing 'code' field"}), 400
+
+            try:
+                path = self.dsl_definition.save_fn(data["code"])
+                return jsonify({"success": True, "path": path})
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
 
