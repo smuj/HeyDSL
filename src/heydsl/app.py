@@ -99,14 +99,11 @@ class HeyDSLApp:
             if not data or "code" not in data:
                 return jsonify({"error": "Missing 'code' field in request"}), 400
             try:
-                return jsonify(
-                    {
-                        "html": wrap_preview(
-                            self.dsl_definition.preview_fn(data["code"]),
-                            clean=self.dsl_definition.clean_preview,
-                        )
-                    }
+                html = wrap_preview(
+                    self.dsl_definition.preview_fn(data["code"]),
+                    clean=self.dsl_definition.clean_preview,
                 )
+                return jsonify({"html": html})
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
 

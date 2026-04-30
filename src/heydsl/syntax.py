@@ -18,6 +18,7 @@ _STRING_RE = r'"(?:[^\\]|\\.)*?(?:"|$)"'
 _NUMBER_RE = r"[-+]?(?:\d*\.\d+|\d+)\b"
 _IDENTIFIER_RE = r"[a-zA-Z_][\w-]*"
 _WHITESPACE_RE = r"\s+"
+_DEFAULT_TYPES = tuple()
 _DEFAULT_OPERATORS = (
     "+",
     "-",
@@ -112,7 +113,7 @@ class Syntax:
         name: str,
         line_comment_style: LineCommentStyle,
         keywords: Sequence[str],
-        types: Sequence[str],
+        types: Sequence[str] = _DEFAULT_TYPES,
         operators: Sequence[str] = _DEFAULT_OPERATORS,
     ) -> Self:
         """Create a Syntax instance from lists of syntax elements.
