@@ -3,6 +3,7 @@
 from .app import DSLDefinition, HeyDSLApp, ServerConfig, UIConfig
 from .asset import AssetType, ExternalAsset
 from .cm5_assets import curated_cm5_themes, default_cm5_assets
+from .file_handler import save_compiled, save_file
 from .syntax import LineCommentStyle, Syntax
 
 __all__ = [
@@ -13,6 +14,8 @@ __all__ = [
     "AssetType",
     "ExternalAsset",
     "curated_cm5_themes",
+    "save_compiled",
+    "save_file",
     "default_cm5_assets",
     "LineCommentStyle",
     "Syntax",
