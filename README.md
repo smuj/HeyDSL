@@ -14,6 +14,10 @@ it provides:
 
 It's designed for local development and can be deployed in your own applications.
 
+## Links
+* GitHub: https://github.com/smuj/heydsl
+* PyPI: https://pypi.org/project/heydsl
+
 ## Installation
 
 ```bash
